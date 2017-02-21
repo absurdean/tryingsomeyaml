@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,45 +24,104 @@ namespace WpfApplication1
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
-  
+
 
     public partial class MainWindow : Window
     {
-       
 
-        public class DeserializedTextBox
+        public class TextBox
         {
-            [YamlMember(Alias = "textbox")]
-            public List<TextBox> textboxes { get; set; }
-            public class TextBox
-            {
-                public string id { get; set; }
-                public string caption { get; set; }
-                public string size { get; set; }
-            }
+            public string Id { get; set; }
+            public string Caption { get; set; }
+            public string Size { get; set; }
+        }
+        public class CheckBox
+        {
+            public string Id { get; set; }
+            public string Label { get; set; }
+            public string Size { get; set; }
+        }
+        public class RadioButtonGroup
+        {
+            public string Id { get; set; }
+            public string Label { get; set; }
+            public string Orientation { get; set; }
+            public List<string> OptionList { get; set; }
         }
 
-        public class YamlImporter
-        {
-            public static DeserializedTextBox Deserialize(string yamlName)
-            {
-                StreamReader sr = new StreamReader(yamlName);
-                string text = sr.ReadToEnd();
-                var input = new StringReader(text);
-                var deserializer = new Deserializer(namingConvention: new CamelCaseNamingConvention());
-                var deserializeObject = deserializer.Deserialize<DeserializedTextBox>(input);
-                return deserializeObject;
-            }
-        }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            DeserializedTextBox obj = YamlImporter.Deserialize("example1.yaml");
-            Console.WriteLine(obj.textboxes[1].id);
-            Console.WriteLine(obj.textboxes[1].caption);
-            Console.WriteLine(obj.textboxes[1].size);
+            StreamReader sr = new StreamReader("example1.yaml");
+            string text = sr.ReadToEnd();
+            var input = new StringReader(text);
+
+            // Load the stream
+            var yaml = new YamlStream();
+            yaml.Load(input);
+
+            // Examine the stream
+            var mapping =
+                (YamlMappingNode) yaml.Documents[0].RootNode;
+
+            var items = (YamlSequenceNode) mapping.Children[new YamlScalarNode("form-elements")];
+
+            foreach (YamlMappingNode item in items)
+            {
+
+                var type = item.Children[new YamlScalarNode("type")];
+
+                switch (type.ToString())
+                {
+                    case "textbox":
+                    {
+
+                        var textboxItem = new TextBox()
+                        {
+                            Id = item.Children[new YamlScalarNode("id")].ToString(),
+                            Caption = item.Children[new YamlScalarNode("caption")].ToString(),
+                            Size = item.Children[new YamlScalarNode("size")].ToString(),
+                        };
+
+                        break;
+
+                    }
+
+                    case "checkbox":
+                    {
+                        var checkboxItem = new CheckBox()
+                        {
+                            Id = item.Children[new YamlScalarNode("id")].ToString(),
+                            Label = item.Children[new YamlScalarNode("label")].ToString(),
+                            Size = item.Children[new YamlScalarNode("size")].ToString(),
+                        };
+                        break;
+                    }
+                    case "radiobuttons":
+                    {
+                        var optionListItems = (YamlSequenceNode) item.Children[new YamlScalarNode("optionList")];
+                        var list = new List<string>();
+                        foreach (YamlScalarNode x in optionListItems)
+                        {
+                            list.Add(x.ToString());
+                        }
+                        var radiobuttonsItem = new RadioButtonGroup()
+                        {
+                            Id = item.Children[new YamlScalarNode("id")].ToString(),
+                            Label = item.Children[new YamlScalarNode("label")].ToString(),
+                            Orientation = item.Children[new YamlScalarNode("orientation")].ToString(),
+                            OptionList = list,
+                        }
+                        ;
+                        break;
+                    }
+                }
+
+
+            }
+
         }
     }
 }
