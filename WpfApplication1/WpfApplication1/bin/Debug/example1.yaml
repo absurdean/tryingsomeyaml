@@ -1,0 +1,8 @@
+textbox:
+ - id:  TextBoxId1
+   caption: Labe1
+   size:    Big
+ - id:  TextBoxId2
+   caption: Labe2
+   size:    Big2
+...
