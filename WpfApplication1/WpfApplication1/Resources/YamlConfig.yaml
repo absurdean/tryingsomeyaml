@@ -1,0 +1,16 @@
+form-elements:
+ - type : textbox
+   id:  TextBoxId1
+   caption: Labe1
+   size: 3
+ - type : checkbox
+   id:  CheckboxId1
+   label: Labe2
+   size: 4
+ - type : radiobuttons
+   id:  RadiobuttonsId1
+   label: Labe2
+   orientation: Horizontal
+   optionList: 
+    - Radio1
+    - Radio2   
